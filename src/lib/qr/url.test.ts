@@ -1,0 +1,1 @@
+import test from"node:test";import assert from"node:assert/strict";import{publicQrPath}from"./url.ts";test("QR contém somente rota pública",()=>{assert.equal(publicQrPath("store","abc"),"/lojas/abc");assert.equal(publicQrPath("campaign","demo"),"/campaigns/demo")});test("rejeita parâmetros no alvo",()=>assert.throws(()=>publicQrPath("campaign","demo?email=x")));

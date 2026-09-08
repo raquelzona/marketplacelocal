@@ -1,0 +1,5 @@
+export type Coordinates={latitude:number;longitude:number};
+export function validCoordinates(value:Coordinates){return Number.isFinite(value.latitude)&&Number.isFinite(value.longitude)&&Math.abs(value.latitude)<=90&&Math.abs(value.longitude)<=180}
+export function distanceKm(a:Coordinates,b:Coordinates){if(!validCoordinates(a)||!validCoordinates(b))return null;const rad=(n:number)=>n*Math.PI/180;const dLat=rad(b.latitude-a.latitude),dLon=rad(b.longitude-a.longitude);const h=Math.sin(dLat/2)**2+Math.cos(rad(a.latitude))*Math.cos(rad(b.latitude))*Math.sin(dLon/2)**2;return 6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))}
+export function formatDistance(km:number|null){if(km===null)return null;return km<1?`${Math.round(km*1000)} m`:`${km.toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})} km`}
+export function sortByDistance<T extends {distanceKm:number|null}>(items:T[]){return [...items].sort((a,b)=>a.distanceKm===null?1:b.distanceKm===null?-1:a.distanceKm-b.distanceKm)}

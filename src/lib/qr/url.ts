@@ -1,0 +1,1 @@
+export function publicQrPath(kind:"store"|"campaign",value:string){const safe=value.trim();if(!safe||safe.includes("/")||safe.includes("?")||safe.includes("#"))throw new Error("invalid_qr_target");return kind==="store"?`/lojas/${safe}`:`/campaigns/${safe}`}

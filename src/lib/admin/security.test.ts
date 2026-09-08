@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
+const sql=readFileSync(new URL('../../../supabase/migrations/202609030006_admin_operations.sql',import.meta.url),'utf8');
+test('RPCs administrativas validam admin e registram auditoria',()=>{for(const name of ['admin_set_merchant_status','admin_moderate_product','admin_set_questionnaire_status'])assert.match(sql,new RegExp(`function public\\.${name}`));assert.ok((sql.match(/if not public\.is_admin\(\)/g)?.length??0)>=5);assert.match(sql,/insert into public\.audit_logs/)});
+test('moderação pública depende de produto ativo e loja verificada',()=>{assert.match(sql,/moderation_status = 'active'/);assert.match(sql,/verification_status = 'verified'/);assert.match(sql,/audit_logs_admin_read/)});

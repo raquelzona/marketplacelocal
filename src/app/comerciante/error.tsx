@@ -1,0 +1,3 @@
+"use client";
+
+export default function MerchantError({retry}:{error:Error;retry:()=>void}){return <main className="container-shell grid flex-1 place-items-center py-16"><div className="max-w-md rounded-3xl border border-red-100 bg-white p-8 text-center shadow-sm"><div className="mx-auto grid size-12 place-items-center rounded-full bg-red-50 font-bold text-red-600">!</div><h1 className="mt-5 text-xl font-semibold text-slate-950">Não foi possível carregar esta área</h1><p className="mt-2 text-sm leading-6 text-slate-500">Verifique sua conexão e tente novamente. Nenhuma alteração foi realizada.</p><button onClick={retry} className="button-primary mt-6">Tentar novamente</button></div></main>}

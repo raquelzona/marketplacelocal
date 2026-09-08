@@ -1,0 +1,2 @@
+export function normalizeAlertTerm(value:string){return value.normalize("NFKC").trim().replace(/\s+/g," ").slice(0,100)}
+export function matchesAlert(term:string,product:{name:string;brand?:string|null;status:string}){if(product.status!=="available")return false;const needle=normalizeAlertTerm(term).toLocaleLowerCase("pt-BR");return Boolean(needle)&&[product.name,product.brand??""].some(value=>value.toLocaleLowerCase("pt-BR").includes(needle))}

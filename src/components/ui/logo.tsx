@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function Logo(){return <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="MarketPulse Local — início"><span className="relative grid size-9 place-items-center rounded-xl bg-teal-700 shadow-sm shadow-teal-900/20"><span className="h-4 w-5 rounded-t-md border-2 border-white border-b-0"/><span className="absolute bottom-2 h-1 w-5 rounded-full bg-amber-300"/></span><span className="text-[17px] font-bold tracking-[-.025em] text-slate-950">MarketPulse <span className="text-teal-700">Local</span></span></Link>}

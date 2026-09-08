@@ -1,0 +1,33 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ChartIcon, ClockIcon, StoreIcon } from "@/components/ui/icons";
+import { IntelligenceDashboard, type IntelligenceData } from "@/components/market-intelligence/intelligence-dashboard";
+import { DemandForecast } from "@/components/market-intelligence/demand-forecast";
+import { requireMerchantCompany } from "@/lib/merchant/data";
+
+export const metadata: Metadata = { title: "Dashboard do comerciante" };
+type Params={periodo?:string;escopo?:string};
+
+export default async function MerchantDashboard({searchParams}:{searchParams:Promise<Params>}){
+  const raw=await searchParams;
+  const period=[7,30,90].includes(Number(raw.periodo))?Number(raw.periodo):7;
+  const scope=raw.escopo==="city"?"city" as const:"neighborhood" as const;
+  const {merchant,supabase}=await requireMerchantCompany();
+  const [{data:products,error:productsError},{data:intelligence,error:intelligenceError},{data:forecast}]=await Promise.all([
+    supabase.from("products").select("id,nome,categoria,quantidade,status,updated_at").eq("merchant_id",merchant.id).order("updated_at",{ascending:false}),
+    supabase.rpc("get_merchant_market_intelligence",{p_period_days:period,p_scope:scope}),
+    supabase.rpc("get_merchant_demand_forecast",{p_scope:scope}),
+  ]);
+  const all=products??[];
+  const counts={total:all.length,available:all.filter(item=>item.status==="available").length,low:all.filter(item=>item.status==="low_stock").length,unavailable:all.filter(item=>item.status==="unavailable").length};
+  return <main className="container-shell flex-1 py-10 sm:py-14"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="section-kicker">Visão geral</p><h1 className="mt-3 text-3xl font-semibold tracking-[-.035em] text-slate-950 sm:text-5xl">{merchant.nome_fantasia}</h1><p className="mt-3 text-slate-600">Seu catálogo e os sinais reais do mercado local.</p></div><VerificationStatus status={merchant.verification_status}/></div>
+    <section className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><Metric label="Produtos cadastrados" value={counts.total}/><Metric label="Disponíveis" value={counts.available}/><Metric label="Estoque baixo" value={counts.low}/><Metric label="Indisponíveis" value={counts.unavailable}/></section>
+    <section className="mt-8 grid gap-4 sm:grid-cols-2"><Link href="/comerciante/produtos/novo" className="group rounded-3xl bg-teal-700 p-6 text-white shadow-lg shadow-teal-900/10 transition hover:bg-teal-800"><ChartIcon className="size-7 text-teal-200"/><h2 className="mt-6 text-xl font-semibold">Cadastrar produto</h2><p className="mt-2 text-sm leading-6 text-teal-100">Adicione um item ao catálogo e informe sua disponibilidade.</p><span className="mt-6 inline-block text-sm font-bold transition group-hover:translate-x-1">Começar →</span></Link><Link href="/comerciante/produtos" className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-teal-200 hover:shadow-lg"><StoreIcon className="size-7 text-teal-700"/><h2 className="mt-6 text-xl font-semibold text-slate-950">Gerenciar catálogo</h2><p className="mt-2 text-sm leading-6 text-slate-500">Edite produtos, quantidades e disponibilidade em um só lugar.</p><span className="mt-6 inline-block text-sm font-bold text-teal-700 transition group-hover:translate-x-1">Abrir catálogo →</span></Link></section>
+    <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7"><div className="flex items-center justify-between"><div><p className="section-kicker">Catálogo</p><h2 className="mt-2 text-xl font-semibold text-slate-950">Atividade recente</h2></div><ClockIcon className="size-6 text-slate-400"/></div>{productsError?<p className="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-700">Não foi possível carregar o resumo do catálogo.</p>:all.length?<ul className="mt-5 divide-y divide-slate-100">{all.slice(0,5).map(product=><li key={product.id} className="flex items-center gap-4 py-4"><div className="grid size-10 shrink-0 place-items-center rounded-xl bg-slate-50 text-slate-500"><StoreIcon className="size-4"/></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-slate-900">{product.nome}</p><p className="mt-1 text-xs text-slate-500">{product.categoria} · {product.quantidade} unidade(s)</p></div><ProductBadge status={product.status}/></li>)}</ul>:<div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center"><p className="text-sm font-semibold text-slate-800">Seu catálogo ainda está vazio</p><p className="mt-2 text-sm text-slate-500">Cadastre o primeiro produto para acompanhar o resumo da empresa.</p></div>}</section>
+    {intelligenceError?<section className="mt-12 rounded-3xl border border-red-100 bg-red-50 p-6"><h2 className="font-semibold text-red-800">Inteligência temporariamente indisponível</h2><p className="mt-2 text-sm text-red-700">Verifique se a migration mais recente foi aplicada e tente novamente.</p></section>:<IntelligenceDashboard data={intelligence as unknown as IntelligenceData} period={period} scope={scope}/>}<DemandForecast data={forecast as never} plan={merchant.plan??"basic"}/>
+  </main>;
+}
+
+function Metric({label,value}:{label:string;value:number}){return <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-3xl font-semibold tracking-tight text-slate-950">{value}</p><p className="mt-2 text-sm text-slate-500">{label}</p></article>}
+function VerificationStatus({status}:{status:string}){const map=status==="verified"?["Empresa verificada","bg-emerald-50 text-emerald-700"]:status==="rejected"?["Revisão necessária","bg-red-50 text-red-700"]:["Verificação pendente","bg-amber-50 text-amber-700"];return <span className={`self-start rounded-full px-4 py-2 text-sm font-bold ${map[1]}`}>{map[0]}</span>}
+function ProductBadge({status}:{status:string}){const map=status==="available"?["Disponível","bg-teal-50 text-teal-700"]:status==="low_stock"?["Estoque baixo","bg-amber-50 text-amber-700"]:["Indisponível","bg-slate-100 text-slate-600"];return <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${map[1]}`}>{map[0]}</span>}

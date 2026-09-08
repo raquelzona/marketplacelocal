@@ -1,0 +1,4 @@
+import test from "node:test";import assert from "node:assert/strict";import {readFileSync} from "node:fs";
+const migration=readFileSync("supabase/migrations/202609080008_geo_forecast_campaigns_monetization.sql","utf8");
+test("campanhas anônimas passam apenas por RPC e mantêm respostas privadas",()=>{assert.match(migration,/submit_public_campaign/);assert.match(migration,/questionnaire_id,consumer_id/);assert.match(migration,/values\(v_campaign\.questionnaire_id,null/);assert.doesNotMatch(migration,/grant insert on public\.questionnaire_responses to anon/)});
+test("plano e patrocínio são protegidos e administrados por RPC auditada",()=>{assert.match(migration,/merchants_protect_commercial/);assert.match(migration,/admin_set_merchant_plan/);assert.match(migration,/merchant\.commercial_changed/)});

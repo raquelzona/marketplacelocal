@@ -1,0 +1,35 @@
+{
+  "name": "marketpulse-local",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test src/lib/market-intelligence/rules.test.ts src/lib/admin/utils.test.ts src/lib/admin/security.test.ts src/lib/security/mvp-security.test.ts src/lib/auth/session.test.ts src/lib/geo/distance.test.ts src/lib/forecast/demand.test.ts src/lib/security/growth-stage.test.ts src/lib/security/expansion-security.test.ts src/lib/alerts/matching.test.ts src/lib/consumer/recommendations.test.ts src/lib/merchant/weekly-report.test.ts src/lib/campaigns/attribution.test.ts src/lib/qr/url.test.ts"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.114.0",
+    "leaflet": "^1.9.4",
+    "next": "16.3.4",
+    "qrcode": "^1.5.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-leaflet": "^5.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,8 @@
+"use client";
+
+import { useActionState } from "react";
+import { updateProfileAction, type ProfileState } from "@/app/consumidor/actions";
+import { InterestPicker } from "@/components/consumer/interest-picker";
+
+export function ProfileForm({profile}:{profile:{nome:string;email:string;cidade:string|null;bairro:string|null;interests:string[]|null}}){const [state,action,pending]=useActionState(updateProfileAction,{} as ProfileState);return <form action={action} className="mt-8 space-y-7"><div className="grid gap-5 sm:grid-cols-2"><Field label="Nome" name="nome" defaultValue={profile.nome}/><Field label="Email" name="email" defaultValue={profile.email} disabled/><Field label="Cidade" name="cidade" defaultValue={profile.cidade??""}/><Field label="Bairro" name="bairro" defaultValue={profile.bairro??""}/></div><fieldset><legend className="text-lg font-semibold text-slate-950">Categorias de interesse</legend><p className="mb-5 mt-1 text-sm text-slate-500">Escolha uma ou mais categorias para personalizar sua experiência.</p><InterestPicker selected={profile.interests??[]}/></fieldset>{(state.error||state.success)&&<p role="status" className={`rounded-xl p-3.5 text-sm ${state.error?"bg-red-50 text-red-700":"bg-teal-50 text-teal-800"}`}>{state.error??state.success}</p>}<button disabled={pending} className="button-primary disabled:opacity-60">{pending?"Salvando...":"Salvar alterações"}</button></form>}
+function Field({label,...props}:{label:string;name:string;defaultValue:string;disabled?:boolean}){return <label><span className="mb-2 block text-sm font-semibold text-slate-700">{label}</span><input {...props} required={!props.disabled} className="consumer-input disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"/></label>}
