@@ -26,7 +26,7 @@ As rotas e Server Components ficam em `src/app`, os componentes reutilizáveis e
 
 ## Banco de dados
 
-As entidades centrais são `profiles`, `merchants`, `products`, `search_events`, `questionnaires`, `questionnaire_questions`, `questionnaire_submissions`, `questionnaire_responses` e `audit_logs`. Chaves estrangeiras preservam os vínculos entre usuários, empresas, produtos e respostas; índices atendem localização, períodos, filtros e agregações.
+As entidades centrais são `profiles`, `merchants`, `products`, `product_stock_events`, `product_alerts`, `alert_notifications`, `search_events`, `questionnaires`, `questionnaire_questions`, `questionnaire_submissions`, `questionnaire_responses`, `campaigns`, `campaign_events` e `audit_logs`. Chaves estrangeiras preservam os vínculos entre usuários, empresas, produtos e respostas; índices atendem localização, períodos, filtros e agregações.
 
 ## Desenvolvimento
 
@@ -121,7 +121,7 @@ Alertas não enviam email, SMS ou push. UTMs aceitam somente textos curtos de or
 
 ## Dados de demonstração
 
-Os seeds são manuais e exclusivos para desenvolvimento. Execute, nesta ordem, depois das sete migrations:
+Os seeds são manuais e exclusivos para desenvolvimento. Execute, nesta ordem, depois das nove migrations:
 
 1. `supabase/seeds/development_questionnaires.sql`
 2. `supabase/seeds/development_market_intelligence.sql`
@@ -132,7 +132,7 @@ Eles criam fixtures claramente marcadas como Demo, com localidades, interesses, 
 ## Deploy na Vercel
 
 1. Publique o repositório em um provedor Git e importe-o na Vercel como projeto Next.js.
-2. Crie um projeto Supabase de produção e aplique somente as migrations `001` a `007`, em ordem. Não aplique seeds de desenvolvimento.
+2. Crie um projeto Supabase de produção e aplique somente as migrations `001` a `009`, em ordem. Não aplique seeds de desenvolvimento.
 3. Configure na Vercel `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` para Production, Preview e Development conforme necessário.
 4. No Supabase, configure **Authentication > URL Configuration > Site URL** com o domínio HTTPS final.
 5. Adicione `https://seu-dominio/auth/callback` aos Redirect URLs; mantenha também a URL local durante desenvolvimento.

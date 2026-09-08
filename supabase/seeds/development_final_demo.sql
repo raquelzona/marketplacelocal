@@ -40,8 +40,8 @@ select ('82000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,'81000000-0000-4
 from generate_series(1,18) n where exists(select 1 from public.campaigns where id='81000000-0000-4000-8000-000000000001')
 on conflict(id) do nothing;
 
-insert into public.campaign_events(id,campaign_id,event_type,utm_source,utm_medium,utm_campaign,created_at)
-select d.id,'81000000-0000-4000-8000-000000000001',d.event_type,d.utm_source,'social','marketpulse-demo',now()-d.age
+insert into public.campaign_events(id,campaign_id,event_type,source,medium,campaign,utm_source,utm_medium,utm_campaign,created_at)
+select d.id,'81000000-0000-4000-8000-000000000001',d.event_type,d.utm_source,'social','marketpulse-demo',d.utm_source,'social','marketpulse-demo',now()-d.age
 from(values
  ('85000000-0000-4000-8000-000000000001'::uuid,'view','instagram',interval '8 hours'),
  ('85000000-0000-4000-8000-000000000002'::uuid,'completion','instagram',interval '7 hours'),
@@ -77,6 +77,18 @@ where exists (select 1 from public.merchants m where m.id=d.merchant_id::uuid)
 -- contornar ou acionar a proteção administrativa durante uma reexecução.
 on conflict do nothing;
 
+-- Histórico determinístico para o resumo semanal. Só é criado quando o produto
+-- correspondente existe e não altera o estoque atual.
+insert into public.product_stock_events(id,product_id,merchant_id,previous_status,new_status,previous_quantity,new_quantity,changed_at)
+select d.id,d.product_id,d.merchant_id,d.previous_status,d.new_status,d.previous_quantity,d.new_quantity,now()-d.age
+from(values
+ ('87000000-0000-4000-8000-000000000001'::uuid,'32000000-0000-4000-8000-000000000003'::uuid,'31000000-0000-4000-8000-000000000003'::uuid,'available'::public.product_status,'low_stock'::public.product_status,8,2,interval '2 days'),
+ ('87000000-0000-4000-8000-000000000002'::uuid,'32000000-0000-4000-8000-000000000004'::uuid,'31000000-0000-4000-8000-000000000003'::uuid,'low_stock'::public.product_status,'unavailable'::public.product_status,2,0,interval '1 day'),
+ ('87000000-0000-4000-8000-000000000003'::uuid,'32000000-0000-4000-8000-000000000006'::uuid,'31000000-0000-4000-8000-000000000005'::uuid,'low_stock'::public.product_status,'available'::public.product_status,3,25,interval '10 hours')
+)d(id,product_id,merchant_id,previous_status,new_status,previous_quantity,new_quantity,age)
+where exists(select 1 from public.products p where p.id=d.product_id and p.merchant_id=d.merchant_id)
+on conflict(id) do nothing;
+
 insert into public.product_alerts(id,consumer_id,search_term,product_id,cidade,bairro,active,created_at)
 select d.id,d.consumer_id,d.search_term,null,'São Paulo','Centro',true,now()-d.age from(values
  ('86000000-0000-4000-8000-000000000001'::uuid,'20000000-0000-4000-8000-000000000001'::uuid,'ração',interval '3 days'),
@@ -108,5 +120,13 @@ begin
 end;
 $$;
 
--- RESET: remove primeiro os eventos/submissões conforme os seeds anteriores e então:
+-- RESET opcional desta camada (execute manualmente e nesta ordem):
 -- delete from public.audit_logs where id::text like '91000000-0000-4000-8000-%';
+-- delete from public.product_alerts where id::text like '86000000-0000-4000-8000-%';
+-- delete from public.product_stock_events where id::text like '87000000-0000-4000-8000-%';
+-- delete from public.questionnaire_responses where id::text like '84000000-0000-4000-8000-%';
+-- delete from public.questionnaire_submissions where id::text like '83000000-0000-4000-8000-%';
+-- delete from public.campaigns where id='81000000-0000-4000-8000-000000000001';
+-- delete from public.products where id in ('32000000-0000-4000-8000-000000000002','32000000-0000-4000-8000-000000000003','32000000-0000-4000-8000-000000000004','32000000-0000-4000-8000-000000000005','32000000-0000-4000-8000-000000000006','32000000-0000-4000-8000-000000000007');
+-- delete from public.merchants where id in ('31000000-0000-4000-8000-000000000003','31000000-0000-4000-8000-000000000004','31000000-0000-4000-8000-000000000005');
+-- update public.merchants set latitude=null,longitude=null where id in ('31000000-0000-4000-8000-000000000001','31000000-0000-4000-8000-000000000002');
